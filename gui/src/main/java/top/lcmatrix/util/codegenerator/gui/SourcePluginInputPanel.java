@@ -366,6 +366,9 @@ public class SourcePluginInputPanel extends JPanel{
 	}
 
     public void loadFromJson(String inputModelJson) {
+		if(StringUtils.isBlank(inputModelJson)){
+			return;
+		}
 		JSONObject jsonObject = JSON.parseObject(inputModelJson);
 		for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
 			JComponent component = componentMap.get(entry.getKey());
