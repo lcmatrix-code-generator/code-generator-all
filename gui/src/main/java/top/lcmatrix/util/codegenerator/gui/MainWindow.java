@@ -258,7 +258,8 @@ public class MainWindow extends JFrame{
 				generating = true;
 				changeGBtnStatus();
 				
-				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(), templateDir, outputDir, globalStr, "default");
+				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(),
+						templateDir, outputDir, globalStr, "default");
 				
 				doGenerateInBackground(inputModel, templateDir, outputDir, global);
 			}
@@ -284,7 +285,7 @@ public class MainWindow extends JFrame{
 					}
 				} catch (Exception e) {
 					logger.error("generate process error.", e);
-					JOptionPane.showMessageDialog(MainWindow.this, e.getMessage());
+					JOptionPane.showMessageDialog(MainWindow.this, "Process error, view the log in \"logs\" directory. " + e.getMessage());
 				}
 				generating = false;
 				changeGBtnStatus();
