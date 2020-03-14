@@ -13,7 +13,8 @@
 ![UI](https://github.com/lcmatrix-code-generator/code-generator-all/blob/master/docs/screenshot1.png?raw=true)
 
 ## 插件开发文档
- 插件有两种，分别是数据源插件和模板引擎插件，它们的作用如下图
+ 插件有两种，分别是数据源插件和模板引擎插件，它们的作用如下图：
+ 
  ![plugin](https://github.com/lcmatrix-code-generator/code-generator-all/blob/master/docs/plugin-doc.png?raw=true)
  
  ### 1.准备工作
