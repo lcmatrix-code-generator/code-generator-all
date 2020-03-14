@@ -1,7 +1,7 @@
 # code-generator-all
 下载：https://github.com/lcmatrix-code-generator/code-generator-all/releases   （运行需要先安装jdk8，https://www.oracle.com/java/technologies/javase-jdk8-downloads.html）
 
-## 这是一个java语言实现代码生成器，但并不限于生成java代码，事实上，通过插件扩展，它几乎可以完成任何文件生成类的工作。
+## 这是一个java语言实现的代码生成器，但并不限于生成java代码，事实上，通过插件扩展，它几乎可以完成任何文件生成类的工作。
 ## 特点：
 * 自带UI，虽然很丑，但是够用，总之比命令行易用点；
 * 支持插件，可以通过插件扩展数据源和引擎支持，加载插件时自动根据插件定义生成输入表单。目前已实现的插件有：[数据库源插件](https://github.com/lcmatrix-code-generator/db-source-plugin)、[freemarker模板引擎插件](https://github.com/lcmatrix-code-generator/freemarker-template-engine-plugin)、[velocity模板引擎插件](https://github.com/lcmatrix-code-generator/velocity-template-engine-plugin)；
