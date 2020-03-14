@@ -11,11 +11,10 @@ public class TemplateProcessor {
 
 	public static void process(AbstractTemplateEnginePlugin templateEngine, TemplateStruct ts, Object model, String storeDir) {
 		try {
-			byte[] fileNameBytes = templateEngine.apply(ts.getFileNameTemplate(), model);
-			if(fileNameBytes == null || fileNameBytes.length == 0){
+			String fileName = templateEngine.apply(ts.getFileNameTemplate(), model);
+			if(fileName == null){
 				return;
 			}
-			String fileName = new String(fileNameBytes);
 			String filePath = PathUtil.createNoRepeatPath(storeDir, fileName);
 			File outputFile = new File(filePath);
 			FileUtils.writeByteArrayToFile(outputFile, templateEngine.apply(ts.getContentTemplate(), model), false);

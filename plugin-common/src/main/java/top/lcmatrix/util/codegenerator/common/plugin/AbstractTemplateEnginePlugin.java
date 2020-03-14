@@ -9,7 +9,7 @@ public abstract class AbstractTemplateEnginePlugin {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public abstract byte[] apply(String templateContent, Object model);
+    public abstract String apply(String templateContent, Object model);
 
     public abstract byte[] apply(File templateFile, Object model);
 
