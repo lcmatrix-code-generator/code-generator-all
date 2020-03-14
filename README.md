@@ -37,9 +37,9 @@
   * String （生成文本输入框）
   * boolean （生成勾选框）
   * File （生成文件选择器-单选）
-  * List<File> （生成文件选择器-多选）
+  * List&lt;File&gt; （生成文件选择器-多选）
   * enum （要求实现 ISelectableEnum 接口，生成单选下拉框）
-  * List<enum> (其中的enum类型要求实现 ISelectableEnum 接口，生成多选框)
+  * List&lt;enum&gt; (其中的enum类型要求实现 ISelectableEnum 接口，生成多选框)
 
   同时，提供一个 @InputField 注解，用于定义更丰富的输入表单选项，如label、默认值、是否必填、验证正则表达式、是否密码框、文件选择范围等。
  
