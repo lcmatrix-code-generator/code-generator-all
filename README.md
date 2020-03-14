@@ -57,7 +57,7 @@
         "version": 1.0     // 插件版本
       }
  
- 6. 打包。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在select source下拉框中看到你的插件。
+ 6. 打包。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在 select source 下拉框中看到你的插件。
  7. 调试。可以在代码生成器界面查看通过该插件生成的数据模型结构。填写好各输入项后，点击 `preview one of output models` 按钮即可（需要至少有一个输出对象）。另外，可以在代码生成器所在目录的 `logs` 目录下查看详细的日志。
  
  ### 3. 模板引擎插件开发
@@ -83,5 +83,5 @@
         "version": 1.0     // 插件版本
       }
  
- 4. 打包。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在select source下拉框中看到你的插件。
+ 4. 打包。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在 select template engine 下拉框中看到你的插件。
  5. 调试。可以在代码生成器界面查看输入到该模板引擎插件的数据模型结构。填写好各输入项后，点击 `preview one of output models` 按钮即可（需要至少有一个输出对象）。另外，可以在代码生成器所在目录的 `logs` 目录下查看详细的日志。
