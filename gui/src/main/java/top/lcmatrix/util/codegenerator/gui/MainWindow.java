@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,8 @@ public class MainWindow extends JFrame{
 	private static Logger logger = LoggerFactory.getLogger(MainWindow.class);
 	
 	private static MainWindow mainWindow;
+	private static File jarDir = DirUtil.getJarDir();
+	private static String usingConfigFile;
 	
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	private JPanel contentPanel;
@@ -94,7 +97,16 @@ public class MainWindow extends JFrame{
 		initExtraOptionPanel();
 		addOtherComponent();
 		initGenerateButton();
-		readConfigurations("default");
+		File[] defaultConfigFiles = jarDir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isFile() && isDefaultConfig(pathname.getName());
+			}
+		});
+		if(defaultConfigFiles != null && defaultConfigFiles.length > 0){
+			usingConfigFile = defaultConfigFiles[0].getName();
+			readConfigurations(usingConfigFile);
+		}
 		initMenu();
 		adjustContentHeight();
 	}
@@ -259,7 +271,8 @@ public class MainWindow extends JFrame{
 				changeGBtnStatus();
 				
 				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(),
-						templateDir, outputDir, globalStr, "default");
+						templateDir, outputDir, globalStr, usingConfigFile);
+				setDefaultConfig(usingConfigFile);
 				
 				doGenerateInBackground(inputModel, templateDir, outputDir, global);
 			}
@@ -304,7 +317,7 @@ public class MainWindow extends JFrame{
 	}
 
 	private void saveConfigurations(SourcePluginDefinition sourcePluginDefinition, Object inputModel, PluginDefinition templateEnginePlugin,
-									String templateDir, String outputDir, String globalStr, String name) {
+									String templateDir, String outputDir, String globalStr, String fileName) {
 		Map<String, Object> configMap = new HashMap<>();
 		configMap.put("sourcePlugin", sourcePluginDefinition);
 		configMap.put("inputModel", inputModel);
@@ -314,19 +327,36 @@ public class MainWindow extends JFrame{
 		configMap.put("global", globalStr);
 
 		String ibJson = JSON.toJSONString(configMap);
-		File jarDir = DirUtil.getJarDir();
-		File defaultJson = new File(jarDir.getAbsoluteFile() + File.separator + name + ".json");
+		File defaultJson = new File(jarDir.getAbsolutePath() + File.separator + fileName);
 		try {
 			FileUtils.write(defaultJson, ibJson, Constants.DEFAULT_CHARSET, false);
 		} catch (IOException e) {
 			logger.error("save configuration error.", e);
 		}
 	}
+
+	private void setDefaultConfig(String configFile){
+		if(isDefaultConfig(configFile)){
+			return;
+		}
+		try {
+			FileUtils.moveFile(new File(jarDir.getAbsolutePath() + File.separator + configFile),
+					new File(jarDir.getAbsolutePath() + File.separator + FilenameUtils.getBaseName(configFile) + ".default.json"));
+			//reload load configuration menu
+			fileMenu.remove(1);
+			fileMenu.add(createLoadConfigMenuItem());
+		} catch (IOException e) {
+			logger.error("set default config error.", e);
+		}
+	}
+
+	private boolean isDefaultConfig(String configFile){
+		return "default.json".equals(configFile) || configFile.endsWith(".default.json");
+	}
 	
 	private void readConfigurations(String configName) {
-		File jarDir = DirUtil.getJarDir();
 		try {
-			String ibJson = FileUtils.readFileToString(new File(jarDir.getAbsoluteFile() + File.separator + configName + ".json"), Constants.DEFAULT_CHARSET);
+			String ibJson = FileUtils.readFileToString(new File(jarDir.getAbsolutePath() + File.separator + configName), Constants.DEFAULT_CHARSET);
 			JSONObject jsonObject = JSON.parseObject(ibJson);
 			commonOptionPanel.setTemplateDir(jsonObject.getString("templateDir"));
 			commonOptionPanel.setOutputDir(jsonObject.getString("outputDir"));
@@ -337,6 +367,7 @@ public class MainWindow extends JFrame{
 				sourcePluginInputPanel.loadFromJson(jsonObject.getString("inputModel"));
 			}
 			extraOptionPanel.setGlobal(jsonObject.getString("global"));
+			usingConfigFile = configName;
 		} catch (FileNotFoundException e){
 		} catch (IOException | JSONException e) {
 			logger.error("read config file fail.", e);
@@ -382,7 +413,7 @@ public class MainWindow extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String configName = JOptionPane.showInputDialog("Enter the name of configurations:");
+				String configName = JOptionPane.showInputDialog("Enter the name of configurations:", usingConfigFile == null ? "" : usingConfigFile);
 				if(configName == null) {
 					return;
 				}
@@ -398,7 +429,9 @@ public class MainWindow extends JFrame{
 				String templateDir = commonOptionPanel.getTemplateDir();
 				String outputDir = commonOptionPanel.getOutputDir();
 				String globalStr = extraOptionPanel.getGlobal();
-				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(), templateDir, outputDir, globalStr, configName);
+				String fileName = configName.endsWith(".json") ? configName : (configName + ".json");
+				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(), templateDir, outputDir, globalStr, fileName);
+				usingConfigFile = fileName;
 				//reload load configuration menu
 				fileMenu.remove(1);
 				fileMenu.add(createLoadConfigMenuItem());
@@ -409,7 +442,6 @@ public class MainWindow extends JFrame{
 	
 	private JMenuItem createLoadConfigMenuItem() {
 		JMenu loadConfigMenu = new JMenu("Load Configurations");
-		File jarDir = DirUtil.getJarDir();
 		File[] configFiles = jarDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
@@ -422,7 +454,7 @@ public class MainWindow extends JFrame{
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String fileName = ((JMenuItem)e.getSource()).getText();
-					readConfigurations(fileName.substring(0, fileName.lastIndexOf(".json")));
+					readConfigurations(fileName);
 				}
 			});
 			loadConfigMenu.add(configFileMenuItem);
