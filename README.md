@@ -1,5 +1,5 @@
 # code-generator-all
-下载：https://github.com/lcmatrix-code-generator/code-generator-all/releases   （运行需要先安装jdk8，https://www.oracle.com/java/technologies/javase-jdk8-downloads.html）
+下载：https://github.com/lcmatrix-code-generator/code-generator-all/releases/latest   （运行需要先安装jdk8，https://www.oracle.com/java/technologies/javase-jdk8-downloads.html）
 
 ## 这是一个java语言实现的代码生成器，但并不限于生成java代码，事实上，通过插件扩展，它几乎可以完成任何文件生成类的工作。
 ## 特点：
