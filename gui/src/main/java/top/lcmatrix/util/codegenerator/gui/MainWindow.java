@@ -44,6 +44,9 @@ public class MainWindow extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private static final String DEFAULT_CONFIG_FILE = "default.json";
+	private static final String LAST_CONFIG_FILE = ".last";
+
 	private static Logger logger = LoggerFactory.getLogger(MainWindow.class);
 	
 	private static MainWindow mainWindow;
@@ -97,18 +100,26 @@ public class MainWindow extends JFrame{
 		initExtraOptionPanel();
 		addOtherComponent();
 		initGenerateButton();
-		File[] defaultConfigFiles = jarDir.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isFile() && isDefaultConfig(pathname.getName());
-			}
-		});
-		if(defaultConfigFiles != null && defaultConfigFiles.length > 0){
-			usingConfigFile = defaultConfigFiles[0].getName();
-			readConfigurations(usingConfigFile);
+
+		usingConfigFile = getLastConfigFile();
+		if(usingConfigFile == null){
+			usingConfigFile = DEFAULT_CONFIG_FILE;
 		}
+		readConfigurations(usingConfigFile);
 		initMenu();
 		adjustContentHeight();
+	}
+
+	private String getLastConfigFile() {
+		try {
+			return FileUtils.readFileToString(new File(jarDir.getAbsolutePath() + File.separator + LAST_CONFIG_FILE),
+					Constants.DEFAULT_CHARSET);
+		} catch (FileNotFoundException e){
+			return null;
+		} catch (IOException e) {
+			logger.warn("Read last config file name failed", e);
+			return null;
+		}
 	}
 
 	private void adjustContentHeight(){
@@ -269,11 +280,10 @@ public class MainWindow extends JFrame{
 				}
 				generating = true;
 				changeGBtnStatus();
-				
+
 				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(),
 						templateDir, outputDir, globalStr, usingConfigFile);
-				setDefaultConfig(usingConfigFile);
-				
+
 				doGenerateInBackground(inputModel, templateDir, outputDir, global);
 			}
 
@@ -327,33 +337,27 @@ public class MainWindow extends JFrame{
 		configMap.put("global", globalStr);
 
 		String ibJson = JSON.toJSONString(configMap);
-		File defaultJson = new File(jarDir.getAbsolutePath() + File.separator + fileName);
+		File configFile = new File(jarDir.getAbsolutePath() + File.separator + fileName);
 		try {
-			FileUtils.write(defaultJson, ibJson, Constants.DEFAULT_CHARSET, false);
+			FileUtils.write(configFile, ibJson, Constants.DEFAULT_CHARSET, false);
+			setLastConfig(fileName);
+			//reload load configuration menu
+			fileMenu.remove(1);
+			fileMenu.add(createLoadConfigMenuItem());
 		} catch (IOException e) {
 			logger.error("save configuration error.", e);
 		}
 	}
 
-	private void setDefaultConfig(String configFile){
-		if(isDefaultConfig(configFile)){
-			return;
-		}
+	private void setLastConfig(String configFileName){
 		try {
-			FileUtils.moveFile(new File(jarDir.getAbsolutePath() + File.separator + configFile),
-					new File(jarDir.getAbsolutePath() + File.separator + FilenameUtils.getBaseName(configFile) + ".default.json"));
-			//reload load configuration menu
-			fileMenu.remove(1);
-			fileMenu.add(createLoadConfigMenuItem());
+			FileUtils.write(new File(jarDir.getAbsolutePath() + File.separator + LAST_CONFIG_FILE),
+					configFileName, Constants.DEFAULT_CHARSET, false);
 		} catch (IOException e) {
-			logger.error("set default config error.", e);
+			logger.error("save last config file name error.", e);
 		}
 	}
 
-	private boolean isDefaultConfig(String configFile){
-		return "default.json".equals(configFile) || configFile.endsWith(".default.json");
-	}
-	
 	private void readConfigurations(String configName) {
 		try {
 			String ibJson = FileUtils.readFileToString(new File(jarDir.getAbsolutePath() + File.separator + configName), Constants.DEFAULT_CHARSET);
@@ -368,6 +372,7 @@ public class MainWindow extends JFrame{
 			}
 			extraOptionPanel.setGlobal(jsonObject.getString("global"));
 			usingConfigFile = configName;
+			setLastConfig(usingConfigFile);
 		} catch (FileNotFoundException e){
 		} catch (IOException | JSONException e) {
 			logger.error("read config file fail.", e);
@@ -413,10 +418,8 @@ public class MainWindow extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String configName = JOptionPane.showInputDialog("Enter the name of configurations:", usingConfigFile == null ? "" : usingConfigFile);
-				if(configName == null) {
-					return;
-				}
+				String configName = getInputConfigName();
+				if (configName == null) return;
 				Object inputModel = null;
 				if(sourcePluginInputPanel != null){
 					try {
@@ -432,9 +435,18 @@ public class MainWindow extends JFrame{
 				String fileName = configName.endsWith(".json") ? configName : (configName + ".json");
 				saveConfigurations(sourcePluginOptionPanel.getSelectedPlugin(), inputModel, templateEnginePluginOptionPanel.getSelectedPlugin(), templateDir, outputDir, globalStr, fileName);
 				usingConfigFile = fileName;
-				//reload load configuration menu
-				fileMenu.remove(1);
-				fileMenu.add(createLoadConfigMenuItem());
+			}
+
+			private String getInputConfigName() {
+				String configName = JOptionPane.showInputDialog("Enter the name of configurations:", usingConfigFile == null ? "" : usingConfigFile);
+				if(configName == null){
+					return null;
+				}
+				if("".equals(configName) || "".equals(FilenameUtils.getBaseName(configName))){
+					JOptionPane.showMessageDialog(MainWindow.this, "Please enter a config file name.");
+					return getInputConfigName();
+				}
+				return configName;
 			}
 		});
 		return saveConfigMenuItem;
