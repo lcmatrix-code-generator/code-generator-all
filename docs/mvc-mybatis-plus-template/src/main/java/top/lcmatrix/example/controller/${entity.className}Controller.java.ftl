@@ -17,11 +17,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import ${global.packageName}.domain.${entity.className};
 import ${global.packageName}.service.${entity.className}Service;
 <#assign entityComplex = entity.entityName + "s">
-<#if entity.entityName?ends_with("a") ||
-	entity.entityName?ends_with("i") ||
-	entity.entityName?ends_with("o") ||
-	entity.entityName?ends_with("u") ||
-	entity.entityName?ends_with("s")>
+<#if entity.entityName?ends_with("s") ||
+	entity.entityName?ends_with("ch") ||
+	entity.entityName?ends_with("sh") ||
+	entity.entityName?ends_with("x")>
 	<#assign entityComplex = entity.entityName + "es">
 </#if>
 <#if !entity.primaryFields[0].fieldType.canonicalName?starts_with("java.lang.")>
