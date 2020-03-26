@@ -53,11 +53,11 @@
  5. **编写插件描述文件**。
  在 工程根目录/src/main/resources 下建立 `plugin-definition.json` 文件，用于描述该插件，内容示例：
  
-      {
-        "name": "sample source",      // 插件名称
-        "class": "top.lcmatrix.util.codegenerator.plugin.sample.SampleSourcePlugin",     // 插件主类，即实现了 AbstractSourcePlugin 的类
-        "version": 1.0     // 插件版本
-      }
+        {
+          "name": "sample source",      // 插件名称
+          "class": "top.lcmatrix.util.codegenerator.plugin.sample.SampleSourcePlugin",     // 插件主类，即实现了 AbstractSourcePlugin 的类
+          "version": 1.0     // 插件版本
+        }
  
  6. **打包**。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在 select source 下拉框中看到你的插件。
  7. **调试**。可以在代码生成器界面查看通过该插件生成的数据模型结构。填写好各输入项后，点击 `preview one of output models` 按钮即可（需要至少有一个输出对象）。另外，可以在代码生成器所在目录的 `logs` 目录下查看详细的日志。
@@ -74,17 +74,17 @@
  
  2. **定义插件类**。实现抽象类 AbstractTemplateEnginePlugin 即可，其中有2个抽象方法需要实现：
  
-      public String apply(String s, Object model)            // 用于生成文件名称
-      public byte[] apply(File templateFile, Object model)   // 用于生成文件内容
+        public String apply(String s, Object model)            // 用于生成文件名称
+        public byte[] apply(File templateFile, Object model)   // 用于生成文件内容
       
  3. **编写插件描述文件**。
  在工程根目录/src/main/resources 下建立 `plugin-definition.json` 文件，用于描述该插件，内容示例：
  
-      {
-        "name": "freemarker engine",      // 插件名称
-        "class": "top.lcmatrix.util.codegenerator.plugin.freemarker.FreemarkerPlugin",     // 插件主类，即实现了 AbstractTemplateEnginePlugin 的类
-        "version": 1.0     // 插件版本
-      }
+        {
+          "name": "freemarker engine",      // 插件名称
+          "class": "top.lcmatrix.util.codegenerator.plugin.freemarker.FreemarkerPlugin",     // 插件主类，即实现了 AbstractTemplateEnginePlugin 的类
+          "version": 1.0     // 插件版本
+        }
  
  4. **打包**。在工程根目录执行命令 `mvn package` 打包，将target目录下生成的 `with-dependences` jar 包拷贝到代码生成器所在目录的plugins目录下，启动代码生成器，即可以在 select template engine 下拉框中看到你的插件。
  5. **调试**。可以在代码生成器界面查看输入到该模板引擎插件的数据模型结构。填写好各输入项后，点击 `preview one of output models` 按钮即可（需要至少有一个输出对象）。另外，可以在代码生成器所在目录的 `logs` 目录下查看详细的日志。
