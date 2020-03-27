@@ -14,6 +14,7 @@ import top.lcmatrix.util.codegenerator.pluginloader.SourcePluginDefinition;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -96,6 +97,18 @@ public class SourcePluginInputPanel extends JPanel{
 			FileInput fileInput = createFileInputComponent(inputFieldAnnotation, false);
 			containComponent = fileInput;
 			inputComponent = fileInput;
+		} else if(inputFieldAnnotation != null && inputFieldAnnotation.multiLine()){
+			JTextArea textArea = new JTextArea();
+			String defaultValue = inputFieldAnnotation.defaultValue();
+			if(StringUtils.isNotBlank(defaultValue)){
+				textArea.setText(defaultValue);
+			}
+			textArea.setRows(3);
+			JScrollPane scrollPane = new JScrollPane();
+			scrollPane.setViewportView(textArea);
+			thisComponentHeight = heightPerComponent * 3;
+			containComponent = scrollPane;
+			inputComponent = textArea;
 		} else {
 			JTextField jTextField = null;
 			if(inputFieldAnnotation != null && inputFieldAnnotation.mask()){
@@ -323,8 +336,8 @@ public class SourcePluginInputPanel extends JPanel{
 	}
 
 	private Object getAndParseValue(Field field, JComponent component) {
-		if(component instanceof JTextField){
-			String text = ((JTextField) component).getText();
+		if(component instanceof JTextComponent){
+			String text = ((JTextComponent) component).getText();
 			if(field.getType().equals(Byte.class) || field.getType().equals(byte.class)){
 				return Byte.valueOf(text);
 			} else if(field.getType().equals(Short.class) || field.getType().equals(short.class)){
@@ -375,8 +388,8 @@ public class SourcePluginInputPanel extends JPanel{
 			if(component == null || entry.getValue() == null){
 				return;
 			}
-			if(component instanceof JTextField) {
-				((JTextField) component).setText(entry.getValue().toString());
+			if(component instanceof JTextComponent) {
+				((JTextComponent) component).setText(entry.getValue().toString());
 			} else if(component instanceof FileInput){
 				Object value = entry.getValue();
 				if(value instanceof JSONArray){

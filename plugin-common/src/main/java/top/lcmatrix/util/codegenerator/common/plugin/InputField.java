@@ -8,6 +8,7 @@ import java.lang.annotation.*;
 public @interface InputField {
     String label() default "";
     boolean required() default false;
+    boolean multiLine() default false;
     String validateRegExp() default "";
     String defaultValue() default "";
 
