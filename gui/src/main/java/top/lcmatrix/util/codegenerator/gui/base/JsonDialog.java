@@ -30,6 +30,6 @@ public class JsonDialog extends JDialog {
         });
 
         contentPanel.add(textArea);
-        this.setContentPane(new JScrollPane(contentPanel));
+        this.setContentPane(new MyJScrollPane(contentPanel));
     }
 }

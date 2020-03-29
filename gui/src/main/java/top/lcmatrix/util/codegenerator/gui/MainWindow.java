@@ -1,20 +1,19 @@
 package top.lcmatrix.util.codegenerator.gui;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.lcmatrix.util.codegenerator.Constants;
 import top.lcmatrix.util.codegenerator.common.plugin.Assert;
 import top.lcmatrix.util.codegenerator.common.plugin.Global;
 import top.lcmatrix.util.codegenerator.common.plugin.IOutputModel;
 import top.lcmatrix.util.codegenerator.generate.Generator;
 import top.lcmatrix.util.codegenerator.gui.base.DM;
 import top.lcmatrix.util.codegenerator.gui.base.JsonDialog;
+import top.lcmatrix.util.codegenerator.gui.base.MyJScrollPane;
+import top.lcmatrix.util.codegenerator.gui.configfile.ConfigFileService;
+import top.lcmatrix.util.codegenerator.gui.input.InputComponentDelegate;
 import top.lcmatrix.util.codegenerator.gui.util.DirUtil;
 import top.lcmatrix.util.codegenerator.gui.util.PropertiesUtil;
 import top.lcmatrix.util.codegenerator.pluginloader.PluginDefinition;
@@ -27,8 +26,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -44,13 +41,10 @@ public class MainWindow extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final String DEFAULT_CONFIG_FILE = "default.json";
-	private static final String LAST_CONFIG_FILE = ".last";
-
 	private static Logger logger = LoggerFactory.getLogger(MainWindow.class);
 	
 	private static MainWindow mainWindow;
-	private static File jarDir = DirUtil.getJarDir();
+	private static ConfigFileService configFileService = new ConfigFileService(DirUtil.getJarDir());
 	private static String usingConfigFile;
 	
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -80,16 +74,16 @@ public class MainWindow extends JFrame{
 	
 	private void initMyself() {
 		this.setTitle("LcMatrix code generator " + PropertiesUtil.getApplicationProperty("app-version"));
-		this.setSize((int)(screenSize.width * 0.5), (int)(screenSize.height * 0.7));
-		this.setLocation((int)(screenSize.width * 0.25), (int)(screenSize.height * 0.15));
+		this.setSize((int)(screenSize.width * 0.6), (int)(screenSize.height * 0.8));
+		this.setLocation((int)(screenSize.width * 0.2), (int)(screenSize.height * 0.1));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		this.setLayout(new FlowLayout());
 		contentPanel = new JPanel();
 		contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, DM.dm2pix(4)));
-		JScrollPane jScrollPane = new JScrollPane(contentPanel);
+		JScrollPane jScrollPane = new MyJScrollPane(contentPanel);
 		jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		jScrollPane.setPreferredSize(new Dimension((int)(getWidth() - 20), (int)(getHeight() * 0.83)));
+		jScrollPane.setPreferredSize(new Dimension((int)(getWidth() - DM.dm2pix(15)), (int)(getHeight() * 0.83)));
 		this.getContentPane().add(jScrollPane);
 	}
 	
@@ -101,25 +95,10 @@ public class MainWindow extends JFrame{
 		addOtherComponent();
 		initGenerateButton();
 
-		usingConfigFile = getLastConfigFile();
-		if(usingConfigFile == null){
-			usingConfigFile = DEFAULT_CONFIG_FILE;
-		}
+		usingConfigFile = configFileService.getLastConfigFile();
 		readConfigurations(usingConfigFile);
 		initMenu();
 		adjustContentHeight();
-	}
-
-	private String getLastConfigFile() {
-		try {
-			return FileUtils.readFileToString(new File(jarDir.getAbsolutePath() + File.separator + LAST_CONFIG_FILE),
-					Constants.DEFAULT_CHARSET);
-		} catch (FileNotFoundException e){
-			return null;
-		} catch (IOException e) {
-			logger.warn("Read last config file name failed", e);
-			return null;
-		}
 	}
 
 	private void adjustContentHeight(){
@@ -170,7 +149,7 @@ public class MainWindow extends JFrame{
 
 	private void addSourceInputPanel(SourcePluginDefinition sourcePluginDef) {
 		double thisWidth = getWidth() * 0.9;
-		sourcePluginInputPanel = new SourcePluginInputPanel(sourcePluginDef, thisWidth);
+		sourcePluginInputPanel = new SourcePluginInputPanel(sourcePluginDef, (int) thisWidth);
 		double thisHeight = sourcePluginInputPanel.getTotalHeight();
 		sourcePluginInputPanel.setPreferredSize(new Dimension((int) thisWidth, (int) thisHeight));
 		contentPanel.add(sourcePluginInputPanel, 1);
@@ -197,7 +176,7 @@ public class MainWindow extends JFrame{
 				Object inputModel = null;
 				try {
 					inputModel = sourcePluginInputPanel.getInputModel();
-				} catch (SourcePluginInputPanel.ValidateException ex) {
+				} catch (InputComponentDelegate.ValidateException ex) {
 					JOptionPane.showMessageDialog(MainWindow.this, ex.getMessage());
 					return;
 				}
@@ -264,7 +243,7 @@ public class MainWindow extends JFrame{
 				Object inputModel = null;
 				try {
 					inputModel = sourcePluginInputPanel.getInputModel();
-				} catch (SourcePluginInputPanel.ValidateException ex) {
+				} catch (InputComponentDelegate.ValidateException ex) {
 					JOptionPane.showMessageDialog(MainWindow.this, ex.getMessage());
 					return;
 				}
@@ -326,60 +305,6 @@ public class MainWindow extends JFrame{
 		}
 	}
 
-	private void saveConfigurations(SourcePluginDefinition sourcePluginDefinition, Object inputModel, PluginDefinition templateEnginePlugin,
-									String templateDir, String outputDir, String globalStr, String fileName) {
-		Map<String, Object> configMap = new HashMap<>();
-		configMap.put("sourcePlugin", sourcePluginDefinition);
-		configMap.put("inputModel", inputModel);
-		configMap.put("templateEnginePlugin", templateEnginePlugin);
-		configMap.put("templateDir", templateDir);
-		configMap.put("outputDir", outputDir);
-		configMap.put("global", globalStr);
-
-		String ibJson = JSON.toJSONString(configMap);
-		File configFile = new File(jarDir.getAbsolutePath() + File.separator + fileName);
-		try {
-			FileUtils.write(configFile, ibJson, Constants.DEFAULT_CHARSET, false);
-			setLastConfig(fileName);
-			//reload load configuration menu
-			fileMenu.remove(1);
-			fileMenu.add(createLoadConfigMenuItem());
-		} catch (IOException e) {
-			logger.error("save configuration error.", e);
-		}
-	}
-
-	private void setLastConfig(String configFileName){
-		try {
-			FileUtils.write(new File(jarDir.getAbsolutePath() + File.separator + LAST_CONFIG_FILE),
-					configFileName, Constants.DEFAULT_CHARSET, false);
-		} catch (IOException e) {
-			logger.error("save last config file name error.", e);
-		}
-	}
-
-	private void readConfigurations(String configName) {
-		try {
-			String ibJson = FileUtils.readFileToString(new File(jarDir.getAbsolutePath() + File.separator + configName), Constants.DEFAULT_CHARSET);
-			JSONObject jsonObject = JSON.parseObject(ibJson);
-			commonOptionPanel.setTemplateDir(jsonObject.getString("templateDir"));
-			commonOptionPanel.setOutputDir(jsonObject.getString("outputDir"));
-			SourcePluginDefinition sourcePluginDefinition = jsonObject.getObject("sourcePlugin", SourcePluginDefinition.class);
-			sourcePluginOptionPanel.selectedPlugin(sourcePluginDefinition);
-			templateEnginePluginOptionPanel.selectedPlugin(jsonObject.getObject("templateEnginePlugin", PluginDefinition.class));
-			if(sourcePluginInputPanel != null){
-				sourcePluginInputPanel.loadFromJson(jsonObject.getString("inputModel"));
-			}
-			extraOptionPanel.setGlobal(jsonObject.getString("global"));
-			usingConfigFile = configName;
-			setLastConfig(usingConfigFile);
-		} catch (FileNotFoundException e){
-		} catch (IOException | JSONException e) {
-			logger.error("read config file fail.", e);
-		}
-		
-	}
-	
 	private void addOtherComponent() {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 20));
 		double thisHeight = heightPerComponent * 2;
@@ -424,7 +349,7 @@ public class MainWindow extends JFrame{
 				if(sourcePluginInputPanel != null){
 					try {
 						inputModel = sourcePluginInputPanel.getInputModel();
-					} catch (SourcePluginInputPanel.ValidateException ex) {
+					} catch (InputComponentDelegate.ValidateException ex) {
 						JOptionPane.showMessageDialog(MainWindow.this, ex.getMessage());
 						return;
 					}
@@ -454,12 +379,7 @@ public class MainWindow extends JFrame{
 	
 	private JMenuItem createLoadConfigMenuItem() {
 		JMenu loadConfigMenu = new JMenu("Load Configurations");
-		File[] configFiles = jarDir.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isFile() && pathname.getName().endsWith(".json");
-			}
-		});
+		File[] configFiles = configFileService.getConfigFiles();
 		for(File f : configFiles) {
 			JMenuItem configFileMenuItem = new JMenuItem(f.getName());
 			configFileMenuItem.addActionListener(new ActionListener() {
@@ -472,5 +392,37 @@ public class MainWindow extends JFrame{
 			loadConfigMenu.add(configFileMenuItem);
 		}
 		return loadConfigMenu;
+	}
+
+	private void saveConfigurations(SourcePluginDefinition sourcePluginDefinition, Object inputModel, PluginDefinition templateEnginePlugin,
+									String templateDir, String outputDir, String globalStr, String fileName) {
+		Map<String, Object> configMap = new HashMap<>();
+		configMap.put("sourcePlugin", sourcePluginDefinition);
+		configMap.put("inputModel", inputModel);
+		configMap.put("templateEnginePlugin", templateEnginePlugin);
+		configMap.put("templateDir", templateDir);
+		configMap.put("outputDir", outputDir);
+		configMap.put("global", globalStr);
+		configFileService.saveConfigurations(configMap, fileName);
+		//reload load configuration menu
+		fileMenu.remove(1);
+		fileMenu.add(createLoadConfigMenuItem());
+	}
+
+	private void readConfigurations(String configName) {
+		JSONObject jsonObject = configFileService.readConfigurations(configName);
+		if(jsonObject == null){
+			return;
+		}
+		commonOptionPanel.setTemplateDir(jsonObject.getString("templateDir"));
+		commonOptionPanel.setOutputDir(jsonObject.getString("outputDir"));
+		SourcePluginDefinition sourcePluginDefinition = jsonObject.getObject("sourcePlugin", SourcePluginDefinition.class);
+		sourcePluginOptionPanel.selectedPlugin(sourcePluginDefinition);
+		templateEnginePluginOptionPanel.selectedPlugin(jsonObject.getObject("templateEnginePlugin", PluginDefinition.class));
+		if(sourcePluginInputPanel != null){
+			sourcePluginInputPanel.loadFromJson(jsonObject.getString("inputModel"));
+		}
+		extraOptionPanel.setGlobal(jsonObject.getString("global"));
+		usingConfigFile = configName;
 	}
 }

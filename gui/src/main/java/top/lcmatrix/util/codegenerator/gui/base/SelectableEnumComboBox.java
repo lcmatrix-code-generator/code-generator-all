@@ -43,8 +43,7 @@ public class SelectableEnumComboBox extends JComboBox<ISelectableEnum> {
         return item;
     }
 
-    @Override
-    public ISelectableEnum getSelectedItem() {
+    public ISelectableEnum getUnwrappedSelectedItem() {
         Object selectedItem = super.getSelectedItem();
         if(selectedItem == null){
             return null;
