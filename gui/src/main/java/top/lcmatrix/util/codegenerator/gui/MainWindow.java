@@ -44,6 +44,7 @@ public class MainWindow extends JFrame{
 	private static Logger logger = LoggerFactory.getLogger(MainWindow.class);
 	
 	private static MainWindow mainWindow;
+	private static final String TITLE = "LcMatrix code generator " + PropertiesUtil.getApplicationProperty("app-version");
 	private static ConfigFileService configFileService = new ConfigFileService(DirUtil.getJarDir());
 	private static String usingConfigFile;
 	
@@ -73,7 +74,7 @@ public class MainWindow extends JFrame{
 	}
 	
 	private void initMyself() {
-		this.setTitle("LcMatrix code generator " + PropertiesUtil.getApplicationProperty("app-version"));
+		this.setTitle(TITLE);
 		this.setSize((int)(screenSize.width * 0.6), (int)(screenSize.height * 0.8));
 		this.setLocation((int)(screenSize.width * 0.2), (int)(screenSize.height * 0.1));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -410,6 +411,7 @@ public class MainWindow extends JFrame{
 	}
 
 	private void readConfigurations(String configName) {
+		this.setTitle(TITLE + " - " + configName);
 		JSONObject jsonObject = configFileService.readConfigurations(configName);
 		if(jsonObject == null){
 			return;
