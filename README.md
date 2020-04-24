@@ -20,6 +20,8 @@
  
  ![plugin](https://github.com/lcmatrix-code-generator/code-generator-all/blob/master/docs/plugin-doc.png?raw=true)
  
+ 这里的模版引擎插件，实际上负责的是将数据模型转换为代码文件的工作，实际上并不仅限于模版类的转换。
+ 
  ### 1.准备工作
  下载 [code-generator-all](https://github.com/lcmatrix-code-generator/code-generator-all) 工程到本地，进入 plugin-common 目录，执行命令 `mvn install`
  
