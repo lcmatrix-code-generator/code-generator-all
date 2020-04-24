@@ -5,7 +5,7 @@
 ## 特点：
 * 自带UI，虽然很丑，但是够用，总之比命令行或者直接运行代码易用点；
 * 支持插件，可以通过插件扩展数据源和引擎支持。通过插件已支持常见关系数据库和freemarker、velocity两种模板。加载插件时自动根据插件定义生成输入表单。目前已实现的插件有：
-  * [数据库源插件](https://github.com/lcmatrix-code-generator/db-source-plugin)，支持指定一个或多个表生成对应代码
+  * [数据库源插件](https://github.com/lcmatrix-code-generator/db-source-plugin)，支持常见关系型数据库，支持指定一个或多个表生成对应代码
   * [freemarker模板引擎插件](https://github.com/lcmatrix-code-generator/freemarker-template-engine-plugin)
   * [velocity模板引擎插件](https://github.com/lcmatrix-code-generator/velocity-template-engine-plugin)；
 * 生成代码将保持与模板目录完全一致的目录结构，文件名同样也支持通过引擎生成，以此来适应各类代码千变万化的目录结构和文件命名规则。
